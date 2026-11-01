@@ -1,5 +1,5 @@
 
-name: aleph-next
+name: TerraMind
 
 services:
 
@@ -9,7 +9,7 @@ services:
 
   postgres:
     image: postgis/postgis:16-3.5
-    container_name: aleph-postgres
+    container_name: TerraMind-postgres
 
     restart: unless-stopped
 
@@ -34,7 +34,7 @@ services:
       start_period: 10s
 
     networks:
-      - aleph-network
+      - TerraMind-network
 
   # ==========================================
   # Redis
@@ -42,7 +42,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: aleph-redis
+    container_name: TerraMind-redis
 
     restart: unless-stopped
 
@@ -72,7 +72,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
 
     networks:
-      - aleph-network
+      - TerraMind-network
 
 # ==========================================
 # Persistent Volumes
@@ -80,16 +80,25 @@ services:
 
 volumes:
   postgres_data:
-    name: aleph-postgres-data
+    name: TerraMind-postgres-data
 
   redis_data:
-    name: aleph-redis-data
+    name: TerraMind-redis-data
+
+
+
+
+
 
 # ==========================================
 # Internal Docker Network
 # ==========================================
 
 networks:
-  aleph-network:
-    name: aleph-network
+  TerraMind-network:
+    name: TerraMind-network
     driver: bridge
+
+
+
+
