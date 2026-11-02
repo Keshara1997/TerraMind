@@ -3,6 +3,36 @@ name: TerraMind-next
 
 services:
 
+# ==========================================
+  # Backend
+# ==========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: TerraMind-backend
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+      - "127.0.0.1:${API_PORT}:8000"
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+      redis:
+        condition: service_healthy
+
+    networks:
+      - TerraMind-network
+
+
+
   # ==========================================
   # PostgreSQL + PostGIS
   # ==========================================
