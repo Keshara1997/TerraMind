@@ -2,12 +2,9 @@
 Geographic intelligence powered by AI
 
 
-
-# Aleph Next
-
 An open-source geospatial exploration and data processing platform.
 
-Aleph Next provides an interactive environment for geographical
+TerraMind provides an interactive environment for geographical
 data collection, processing, visualization and AI-assisted analysis.
 
 ## Technology Stack
