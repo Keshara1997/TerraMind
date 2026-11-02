@@ -484,7 +484,7 @@ infrastructure/docker/frontend.Dockerfile \
 infrastructure/docker/worker.Dockerfile \
 infrastructure/docker/titiler.Dockerfile \
 infrastructure/nginx/nginx.conf \
-infrastructure/nginx/conf.d/aleph-next.conf \
+infrastructure/nginx/conf.d/TerraMind-next.conf \
 infrastructure/aws/terraform/main.tf \
 infrastructure/aws/terraform/variables.tf \
 infrastructure/aws/terraform/outputs.tf \
