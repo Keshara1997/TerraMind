@@ -54,7 +54,7 @@ export function Sidebar() {
 
         <div>
           <h1 className="text-lg font-bold tracking-tight text-white">
-            ALEPH
+            TerraMind
           </h1>
           <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
             Geospatial platform

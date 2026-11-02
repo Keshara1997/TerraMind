@@ -18,7 +18,7 @@ export function PlaceholderPage({
       <div className="mx-auto max-w-5xl space-y-8">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
-            Aleph Next workspace
+            TerraMind Next workspace
           </p>
 
           <h1 className="mt-2 text-3xl font-semibold text-white">

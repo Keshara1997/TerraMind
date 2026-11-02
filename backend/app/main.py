@@ -44,7 +44,7 @@ def root():
         "application": settings.APP_NAME,
         "version": "0.1.0",
         "environment": settings.APP_ENV,
-        "message": "Welcome to Aleph Next API",
+        "message": "Welcome to TerraMind Next API",
         "documentation": "/docs",
     }
 
@@ -69,7 +69,7 @@ app.include_router(
 @app.get("/api/v1/", tags=["API"])
 def api_version():
     return {
-        "api": "Aleph Next",
+        "api": "TerraMind Next",
         "version": "v1",
         "status": "available",
     }

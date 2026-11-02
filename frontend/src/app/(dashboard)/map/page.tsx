@@ -1,6 +1,6 @@
 
 import { AppShell } from "@/components/layout/app-shell";
-import MapExplorer from "@/components/map/map-explorer";
+import MapExplorer from "@/components/maps/map-explorer";
 
 export default function MapPage() {
   return (

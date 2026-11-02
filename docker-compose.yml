@@ -42,7 +42,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
 
-    container_name: aleph-frontend
+    container_name: TerraMind-frontend
 
     restart: unless-stopped
 
@@ -80,6 +80,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
 
     ports:
       - "127.0.0.1:${POSTGRES_PORT}:5432"

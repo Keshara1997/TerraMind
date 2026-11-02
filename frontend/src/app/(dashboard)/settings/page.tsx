@@ -5,7 +5,7 @@ export default function SettingsPage() {
   return (
     <PlaceholderPage
       title="Settings"
-      description="Manage your Aleph Next workspace configuration."
+      description="Manage your TerraMind Next workspace configuration."
       icon={Settings}
     />
   );

@@ -154,7 +154,7 @@ export function DashboardOverview() {
       </section>
 
       <footer className="border-t border-white/10 pt-5 text-xs text-slate-600">
-        Aleph Next · Geospatial exploration platform · Development 0.1.0
+        TerraMind Next · Geospatial exploration platform · Development 0.1.0
       </footer>
     </div>
   );

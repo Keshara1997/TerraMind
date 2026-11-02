@@ -6,8 +6,8 @@ import { QueryProvider } from "@/providers/query-provider";
 
 export const metadata: Metadata = {
   title: {
-    default: "Aleph Next",
-    template: "%s | Aleph Next",
+    default: "TerraMind Next",
+    template: "%s | TerraMind Next",
   },
   description:
     "Geospatial exploration, data collection and AI-assisted analysis platform.",
