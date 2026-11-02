@@ -2,7 +2,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import maplibreg { Map } from "maplibre-gl";
+
+import maplibregl from "maplibre-gl";
+import type { Map } from "maplibre-gl";
 import { useMapStore } from "@/store/map.store";
 
 export default function MapExplorer() {
