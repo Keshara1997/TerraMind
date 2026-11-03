@@ -1,4 +1,5 @@
 
+import { ProtectedRoute } from "../providers/frprotected-route";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -8,6 +9,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
+    <ProtectedRoute>
     <div className="flex min-h-screen bg-[#0b1017] text-white">
       <div className="hidden lg:block">
         <Sidebar />
@@ -21,5 +23,6 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
