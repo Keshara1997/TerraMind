@@ -12,14 +12,23 @@ class ProjectService:
     def __init__(self, db: Session):
         self.repository = ProjectRepository(db)
 
-    def list_projects(self) -> list[Project]:
-        return self.repository.get_all()
+    def list_projects(self, owner_id: uuid.UUID) -> list[Project]:
+        return self.repository.get_all(owner_id)
 
-    def get_project(self, project_id: uuid.UUID) -> Project | None:
-        return self.repository.get_by_id(project_id)
+    def get_project(
+        self,
+        project_id: uuid.UUID,
+        owner_id: uuid.UUID,
+    ) -> Project | None:
+        return self.repository.get_by_id(project_id, owner_id)
 
-    def create_project(self, data: ProjectCreate) -> Project:
+    def create_project(
+        self,
+        owner_id: uuid.UUID,
+        data: ProjectCreate,
+    ) -> Project:
         return self.repository.create(
+            owner_id=owner_id,
             name=data.name,
             description=data.description,
         )

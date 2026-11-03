@@ -11,15 +11,33 @@ class ProjectRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_all(self) -> list[Project]:
-        statement = select(Project).order_by(Project.created_at.desc())
+    def get_all(self, owner_id: uuid.UUID) -> list[Project]:
+        statement = (
+            select(Project)
+            .where(Project.owner_id == owner_id)
+            .order_by(Project.created_at.desc())
+        )
         return list(self.db.scalars(statement).all())
 
-    def get_by_id(self, project_id: uuid.UUID) -> Project | None:
-        return self.db.get(Project, project_id)
+    def get_by_id(
+        self,
+        project_id: uuid.UUID,
+        owner_id: uuid.UUID,
+    ) -> Project | None:
+        statement = select(Project).where(
+            Project.id == project_id,
+            Project.owner_id == owner_id,
+        )
+        return self.db.scalar(statement)
 
-    def create(self, name: str, description: str | None) -> Project:
+    def create(
+        self,
+        owner_id: uuid.UUID,
+        name: str,
+        description: str | None,
+    ) -> Project:
         project = Project(
+            owner_id=owner_id,
             name=name,
             description=description,
             status="active",
