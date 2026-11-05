@@ -2,8 +2,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
-import type { Map, GeoJSONSource } from "maplibre-gl";import type {
+import {
+  LngLatBounds,
+  Map as MapLibre,
+  NavigationControl,
+} from "maplibre-gl";
+import type { GeoJSONSource, Map as MapInstance } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import type {
   Feature,
   FeatureCollection,
   Geometry,
@@ -79,7 +85,7 @@ function createSavedFeatures(
 
 export default function AreaEditor() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<Map | null>(null);
+  const mapRef = useRef<MapInstance | null>(null);
   const draftRef = useRef<Position[]>([]);
   const drawingRef = useRef(false);
 
@@ -103,7 +109,7 @@ export default function AreaEditor() {
 
     const source = mapRef.current?.getSource(
       "draft-area",
-    ) as maplibregl.GeoJSONSource | undefined;
+    ) as GeoJSONSource | undefined;
 
     source?.setData(createDraftFeature(coordinates));
   }, []);
@@ -184,7 +190,7 @@ export default function AreaEditor() {
   useEffect(() => {
     if (!mapContainer.current || mapRef.current) return;
 
-    const map = new maplibregl.Map({
+    const map = new MapLibre({
       container: mapContainer.current,
       style:
         process.env.NEXT_PUBLIC_MAP_STYLE_URL ??
@@ -194,7 +200,7 @@ export default function AreaEditor() {
     });
 
     mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
+    map.addControl(new NavigationControl(), "top-right");
 
     map.on("load", () => {
       map.addSource("saved-areas", {
@@ -286,7 +292,7 @@ export default function AreaEditor() {
 
     const source = mapRef.current?.getSource(
       "saved-areas",
-    ) as maplibregl.GeoJSONSource | undefined;
+    ) as GeoJSONSource | undefined;
 
     source?.setData(createSavedFeatures(areas));
   }, [areas, mapLoaded]);
@@ -334,7 +340,7 @@ export default function AreaEditor() {
 
     const source = mapRef.current?.getSource(
       "draft-area",
-    ) as maplibregl.GeoJSONSource | undefined;
+    ) as GeoJSONSource | undefined;
 
     source?.setData(EMPTY_COLLECTION);
   }
@@ -448,7 +454,7 @@ export default function AreaEditor() {
         : area.geometry.coordinates[0][0];
 
     if (coordinates.length > 0) {
-      const bounds = new maplibregl.LngLatBounds();
+      const bounds = new LngLatBounds();
 
       coordinates.forEach((coordinate) => {
         bounds.extend([

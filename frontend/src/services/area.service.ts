@@ -1,10 +1,15 @@
 
 import { api } from "@/lib/api";
 
-export interface AreaGeometry {
-  type: "Polygon" | "MultiPolygon";
-  coordinates: number[][][] | number[][][][];
-}
+export type AreaGeometry =
+  | {
+      type: "Polygon";
+      coordinates: number[][][];
+    }
+  | {
+      type: "MultiPolygon";
+      coordinates: number[][][][];
+    };
 
 export interface Area {
   id: string;
