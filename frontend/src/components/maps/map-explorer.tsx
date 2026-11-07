@@ -72,6 +72,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { useMapStore } from "@/store/map.store";
 
+setWorkerUrl("/maplibre-gl-worker.mjs");
+
 export default function MapExplorer() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<MapLibreMap | null>(null);
@@ -84,8 +86,6 @@ export default function MapExplorer() {
     if (!mapContainer.current || mapInstance.current) {
       return;
     }
-
-    setWorkerUrl("/maplibre-gl-worker.mjs");
 
     const map = new Map({
       container: mapContainer.current,
