@@ -40,6 +40,11 @@ const navigation = [
     href: "/ai",
     icon: Bot,
   },
+  {
+  label: "Captures",
+  href: "/captures",
+  icon: Database,
+},
 ];
 
 export function Sidebar() {

@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     JWT_ALGORITHM: str = "HS256"
 
+    CELERY_TASK_DEFAULT_QUEUE: str = "aleph-captures"
+    CAPTURE_MAX_FEATURES: int = 1000
+
 
 @lru_cache
 def get_settings() -> Settings:

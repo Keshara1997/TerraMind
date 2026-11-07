@@ -12,7 +12,9 @@ services:
       dockerfile: Dockerfile
 
     container_name: TerraMind-backend
-
+    command: > 
+       celery -A app.workers.celery_app:celery_app
+       worker --loglevel=info --concurrency=2
     restart: unless-stopped
 
     env_file:
