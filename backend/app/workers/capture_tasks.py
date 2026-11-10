@@ -9,7 +9,7 @@ from app.models.capture import Capture
 from app.models.dataset import Dataset
 from app.providers.registry import get_capture_provider
 from app.workers.celery_app import celery_app
-
+from app.providers.stac_provider import STACProvider
 
 @celery_app.task(
     name="captures.process",
@@ -57,21 +57,51 @@ def process_capture(self, capture_id: str):
         config = capture.config or {}
         provider_name = config.get("provider", "geojson")
 
-        provider = get_capture_provider(provider_name)
-        output = provider.capture(geojson_geometry, config)
+        if provider_name == "geojson":
+            provider = get_capture_provider("geojson")
+            output = provider.capture(geojson_geometry, config)
+
+        elif provider_name == "stac":
+            provider = STACProvider()
+
+            output = provider.search(
+                geometry=geojson_geometry,
+                start_date=config["start_date"],
+                end_date=config["end_date"],
+                max_cloud_cover=float(
+                    config.get("max_cloud_cover", 30)
+                ),
+            )
+
+        else:
+            raise ValueError(
+                f"Unsupported capture provider: {provider_name}"
+            )
+
+        is_stac = provider_name == "stac"
 
         dataset = Dataset(
             project_id=capture.project_id,
             capture_id=capture.id,
-            name=f"{area.name} capture",
-            format="geojson",
+            name=(
+                f"{area.name} - Sentinel-2 search"
+                if is_stac
+                else f"{area.name} capture"
+            ),
+            format="stac-json" if is_stac else "geojson",
             metadata={
                 "provider": provider_name,
                 "feature_count": len(output["features"]),
-                "capture_type": config.get(
-                    "capture_type",
-                    "area_boundary",
+                "collection": output.get("collection"),
+                "number_returned": output.get("number_returned"),
+                "number_before_cloud_filter": output.get(
+                "number_before_cloud_filter"
                 ),
+                "search_parameters": {
+                    "start_date": config.get("start_date"),
+                    "end_date": config.get("end_date"),
+                    "max_cloud_cover": config.get("max_cloud_cover"),
+                },
                 "output": output,
             },
         )

@@ -75,11 +75,13 @@ def create_capture(
             detail="Area not found in this project.",
         )
 
-    if payload.config.get("provider", "geojson") != "geojson":
+    provider_name = payload.config.get("provider", "geojson")
+
+    if provider_name not in {"geojson", "stac"}:
         raise HTTPException(
-            status_code=422,
-            detail="Only the geojson provider is currently supported.",
-        )
+        status_code=422,
+        detail="Unsupported capture provider.",
+    )
 
     if payload.data_source_id is not None:
         data_source = (
@@ -96,6 +98,15 @@ def create_capture(
                 status_code=404,
                 detail="Active data source not found.",
             )
+
+        capture_config = dict(payload.config)
+
+    if provider_name == "stac":         
+        capture_config.update({
+        "start_date": payload.start_date.isoformat(),
+        "end_date": payload.end_date.isoformat(),
+        "max_cloud_cover": payload.max_cloud_cover,
+    })
 
     capture = Capture(
         project_id=project_id,

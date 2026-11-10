@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     CELERY_TASK_DEFAULT_QUEUE: str = "aleph-captures"
     CAPTURE_MAX_FEATURES: int = 1000
 
+    STAC_API_URL: str = "https://earth-search.aws.element84.com/v1"
+    STAC_COLLECTION: str = "sentinel-2-l2a"
+    STAC_REQUEST_TIMEOUT: int = 45
+    STAC_MAX_ITEMS: int = 20
 
 @lru_cache
 def get_settings() -> Settings:
