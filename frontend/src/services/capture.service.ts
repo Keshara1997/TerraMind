@@ -31,23 +31,41 @@ export interface Dataset {
 }
 
 export const captureService = {
-  async create(
-    projectId: string,
-    areaId: string,
-  ): Promise<Capture> {
-    const response = await api.post<Capture>(
-      `/projects/${projectId}/captures/`,
-      {
-        area_id: areaId,
-        config: {
-          provider: "geojson",
-          capture_type: "area_boundary",
-        },
+    async create(
+      projectId: string,
+      areaId: string,
+      options?: {
+        provider?: "geojson" | "stac";
+        startDate?: string;
+        endDate?: string;
+        maxCloudCover?: number;
       },
-    );
+    ): Promise<Capture> {
+      const provider = options?.provider ?? "geojson";
 
-    return response.data;
-  },
+      const response = await api.post<Capture>(
+        `/projects/${projectId}/captures/`,
+        {
+          area_id: areaId,
+          config: {
+            provider,
+            capture_type:
+              provider === "stac"
+                ? "satellite_imagery"
+                : "area_boundary",
+          },
+          ...(provider === "stac"
+            ? {
+                start_date: options?.startDate,
+                end_date: options?.endDate,
+                max_cloud_cover: options?.maxCloudCover ?? 30,
+              }
+            : {}),
+        },
+      );
+
+      return response.data;
+    },
 
   async list(projectId: string): Promise<Capture[]> {
     const response = await api.get<Capture[]>(
