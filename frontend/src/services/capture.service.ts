@@ -44,7 +44,7 @@ export const captureService = {
       const provider = options?.provider ?? "geojson";
 
       const response = await api.post<Capture>(
-        `/projects/${projectId}/captures/`,
+        `/api/v1/projects/${projectId}/captures/`,
         {
           area_id: areaId,
           config: {
@@ -69,7 +69,7 @@ export const captureService = {
 
   async list(projectId: string): Promise<Capture[]> {
     const response = await api.get<Capture[]>(
-      `/projects/${projectId}/captures/`,
+      `/api/v1/projects/${projectId}/captures/`,
     );
 
     return response.data;
@@ -80,7 +80,7 @@ export const captureService = {
     captureId: string,
   ): Promise<Capture> {
     const response = await api.get<Capture>(
-      `/projects/${projectId}/captures/${captureId}`,
+      `/api/v1/projects/${projectId}/captures/${captureId}`,
     );
 
     return response.data;
@@ -91,9 +91,54 @@ export const captureService = {
     captureId: string,
   ): Promise<Dataset[]> {
     const response = await api.get<Dataset[]>(
-      `/projects/${projectId}/captures/${captureId}/datasets`,
+      `/api/v1/projects/${projectId}/captures/${captureId}/datasets`,
     );
 
     return response.data;
   },
+
+
+    async processNDVI(
+    projectId: string,
+    captureId: string,
+    sourceDatasetId: string,
+    itemId: string,
+  ) {
+    const response = await api.post(
+      `/api/v1/projects/${projectId}/captures/${captureId}/ndvi`,
+      {
+        source_dataset_id: sourceDatasetId,
+        item_id: itemId,
+      },
+    );
+
+    return response.data;
+  },
+
+  async downloadUrl(
+    projectId: string,
+    captureId: string,
+    datasetId: string,
+  ): Promise<string> {
+    return (
+      `${api.defaults.baseURL}/api/v1/projects/${projectId}` +
+      `/captures/${captureId}/datasets/${datasetId}/download`
+    );
+  },
+
+
+  async download(
+  projectId: string,
+  captureId: string,
+  datasetId: string,
+): Promise<Blob> {
+  const response = await api.get(
+    `/api/v1/projects/${projectId}/captures/${captureId}/datasets/${datasetId}/download`,
+    { responseType: "blob" },
+  );
+
+  return response.data;
+},
+
+
 };

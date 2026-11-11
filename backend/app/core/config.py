@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     STAC_REQUEST_TIMEOUT: int = 45
     STAC_MAX_ITEMS: int = 20
 
+    DATASET_STORAGE_DIR: str = "/data/aleph/datasets"
+    NDVI_NODATA: float = -9999.0
+    NDVI_MIN_VALID_PIXELS: int = 10
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

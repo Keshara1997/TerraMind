@@ -18,6 +18,11 @@ from app.schemas.capture import (
 )
 from app.workers.capture_tasks import process_capture
 
+from app.workers.raster_tasks import process_ndvi
+
+
+from app.core.config import settings
+
 router = APIRouter(
     prefix="/projects/{project_id}/captures",
     tags=["Geospatial Captures"],
@@ -210,4 +215,188 @@ def list_capture_datasets(
         )
         .order_by(Dataset.created_at.desc())
         .all()
+    )
+
+
+
+from pydantic import BaseModel, Field
+
+
+from pydantic import BaseModel, Field
+
+
+class NDVIRequest(BaseModel):
+    source_dataset_id: UUID
+    item_id: str = Field(min_length=1, max_length=512)
+
+
+@router.post(
+    "/{capture_id}/ndvi",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def start_ndvi_processing(
+    project_id: UUID,
+    capture_id: UUID,
+    payload: NDVIRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    check_project_access(db, project_id, current_user.id)
+
+    capture = (
+        db.query(Capture)
+        .filter(
+            Capture.id == capture_id,
+            Capture.project_id == project_id,
+        )
+        .first()
+    )
+
+    if capture is None:
+        raise HTTPException(status_code=404, detail="Capture not found.")
+
+    source_dataset = (
+        db.query(Dataset)
+        .filter(
+            Dataset.id == payload.source_dataset_id,
+            Dataset.capture_id == capture_id,
+            Dataset.project_id == project_id,
+            Dataset.format == "stac-json",
+        )
+        .first()
+    )
+
+    if source_dataset is None:
+        raise HTTPException(
+            status_code=404,
+            detail="STAC search dataset not found.",
+        )
+
+    features = (
+        source_dataset.metadata_json or {}
+    ).get("output", {}).get("features", [])
+
+    selected_item = next(
+        (
+            feature
+            for feature in features
+            if feature.get("id") == payload.item_id
+        ),
+        None,
+    )
+
+    if selected_item is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Selected satellite scene not found.",
+        )
+
+    assets = selected_item.get("assets", {})
+
+    if not assets.get("red") or not assets.get("nir"):
+        raise HTTPException(
+            status_code=422,
+            detail="Selected scene does not have the required red and NIR bands.",
+        )
+
+    output_dataset = Dataset(
+        project_id=project_id,
+        capture_id=capture_id,
+        name=f"NDVI - {payload.item_id}",
+        format="geotiff",
+        processing_status="pending",
+        metadata_json={
+            "analysis": "ndvi",
+            "source_dataset_id": str(source_dataset.id),
+            "source_item_id": payload.item_id,
+        },
+    )
+
+    db.add(output_dataset)
+    db.commit()
+    db.refresh(output_dataset)
+
+    try:
+        process_ndvi.delay(str(output_dataset.id))
+    except Exception as exc:
+        output_dataset.processing_status = "failed"
+        output_dataset.metadata_json = {
+            **(output_dataset.metadata_json or {}),
+            "processing_error": "Unable to enqueue raster processing.",
+        }
+        db.commit()
+
+        raise HTTPException(
+            status_code=503,
+            detail="Raster processing worker is unavailable.",
+        ) from exc
+
+    return {
+        "dataset_id": str(output_dataset.id),
+        "status": output_dataset.processing_status,
+        "message": "NDVI processing has been queued.",
+    }
+
+
+
+from pathlib import Path
+
+from fastapi.responses import FileResponse
+
+
+
+@router.get("/{capture_id}/datasets/{dataset_id}/download")
+def download_dataset(
+    project_id: UUID,
+    capture_id: UUID,
+    dataset_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    check_project_access(db, project_id, current_user.id)
+
+    dataset = (
+        db.query(Dataset)
+        .filter(
+            Dataset.id == dataset_id,
+            Dataset.capture_id == capture_id,
+            Dataset.project_id == project_id,
+        )
+        .first()
+    )
+
+    if dataset is None:
+        raise HTTPException(status_code=404, detail="Dataset not found.")
+
+    if dataset.processing_status != "completed":
+        raise HTTPException(
+            status_code=409,
+            detail="Dataset processing is not completed.",
+        )
+
+    if not dataset.storage_path:
+        raise HTTPException(
+            status_code=404,
+            detail="Dataset file is not available.",
+        )
+
+    storage_root = Path(settings.DATASET_STORAGE_DIR).resolve()
+    file_path = Path(dataset.storage_path).resolve()
+
+    if not file_path.is_relative_to(storage_root):
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid dataset storage location.",
+        )
+
+    if not file_path.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="Dataset file does not exist.",
+        )
+
+    return FileResponse(
+        path=file_path,
+        media_type=dataset.content_type or "application/octet-stream",
+        filename=f"{dataset.id}.tif",
     )

@@ -8,6 +8,8 @@ from datetime import date
 from pydantic import field_validator, model_validator
 
 
+from pydantic import AliasChoices, Field
+
 class CaptureCreate(BaseModel):
     area_id: UUID
     data_source_id: UUID | None = None
@@ -67,3 +69,29 @@ def validate_stac_options(self):
             )
 
     return self
+
+
+
+class DatasetRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    project_id: UUID
+    capture_id: UUID
+    name: str
+    format: str
+
+    metadata: dict[str, Any] = Field(
+        default_factory=dict,
+        validation_alias=AliasChoices("metadata_json", "metadata"),
+    )
+
+    processing_status: str = "pending"
+    storage_path: str | None = None
+    content_type: str | None = None
+    file_size_bytes: int | None = None
+    crs: str | None = None
+    bounds: dict[str, Any] | None = None
+    statistics: dict[str, Any] | None = None
+
+    created_at: datetime

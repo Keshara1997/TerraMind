@@ -20,3 +20,8 @@ celery_app.conf.update(
     worker_prefetch_multiplier=1,
     task_reject_on_worker_lost=True,
 )
+
+include=[
+    "app.workers.capture_tasks",
+    "app.workers.raster_tasks",
+],
