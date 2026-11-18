@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+
 const navigation = [
   {
     label: "Overview",
@@ -46,6 +47,11 @@ const navigation = [
     href: "/analysis",
     icon: Layers,
   },
+  {
+    label: "AI Assistant",
+    href: "/ai",
+    icon: Bot,
+  }
 ];
 
 export function Sidebar() {

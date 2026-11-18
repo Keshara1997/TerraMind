@@ -42,6 +42,16 @@ class Settings(BaseSettings):
 
     TITILER_INTERNAL_URL: str = "http://titiler:8000"
 
+
+    AI_ENABLED: bool = False
+    AI_PROVIDER: str = "openai"
+    AI_MODEL: str = "gpt-5"
+    AI_API_KEY: str | None = None
+    AI_BASE_URL: str | None = None
+    AI_REQUEST_TIMEOUT: int = 60
+    AI_MAX_OUTPUT_TOKENS: int = 1500
+    AI_TEMPERATURE: float = 0.2
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

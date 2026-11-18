@@ -4,6 +4,7 @@ from app.api.v1.endpoints import captures
 
 from app.api.v1.endpoints import areas, auth, projects
 from app.api.v1.endpoints import analysis
+from app.api.v1.endpoints import ai
 
 
 
@@ -15,3 +16,4 @@ api_router.include_router(areas.router)
 api_router.include_router(captures.router)
 
 api_router.include_router(analysis.router)
+api_router.include_router(ai.router)
