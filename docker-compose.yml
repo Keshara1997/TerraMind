@@ -12,9 +12,6 @@ services:
       dockerfile: Dockerfile
 
     container_name: TerraMind-backend
-    command: > 
-       celery -A app.workers.celery_app:celery_app
-       worker --loglevel=info --concurrency=2
     restart: unless-stopped
 
     env_file:
@@ -39,6 +36,7 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
+      DATASET_STORAGE_DIR: /data/terra-mind/datasets
       APP_NAME: ${APP_NAME:-TerraMind Next}
       APP_ENV: ${APP_ENV:-development}
       APP_DEBUG: ${APP_DEBUG:-true}
@@ -47,6 +45,37 @@ services:
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-15}
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: ${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: TerraMind-worker
+    command: >
+      celery -A app.workers.celery_app:celery_app
+      worker --loglevel=info --concurrency=2
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    volumes:
+      - terramind-datasets:/data/terra-mind/datasets
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - TerraMind-network
+
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      DATASET_STORAGE_DIR: /data/terra-mind/datasets
 
 
 

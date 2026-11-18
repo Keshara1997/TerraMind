@@ -3,10 +3,14 @@ from celery import Celery
 from app.core.config import settings
 
 celery_app = Celery(
-    "aleph_next",
+    "terramind",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["app.workers.capture_tasks"],
+    include=[
+        "app.workers.capture_tasks",
+        "app.workers.raster_tasks",
+        "app.workers.change_tasks",
+    ],
 )
 
 celery_app.conf.update(
@@ -20,8 +24,3 @@ celery_app.conf.update(
     worker_prefetch_multiplier=1,
     task_reject_on_worker_lost=True,
 )
-
-include=[
-    "app.workers.capture_tasks",
-    "app.workers.raster_tasks",
-],

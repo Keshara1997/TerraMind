@@ -84,15 +84,83 @@ def create_ndvi_change(
             detail="Select two different NDVI datasets",
         )
 
-    # Implement dataset ownership and status checks here before dispatch.
-    # Both datasets must belong to this project and be completed NDVI outputs.
-    #
-    # Create the output Dataset record and commit it before dispatching.
-    # Dispatch the Celery task with the output dataset ID and threshold.
-    #
-    # Return the new output dataset ID and its processing status.
+    from pathlib import Path
+    from uuid import uuid4
 
-    raise HTTPException(
-        status_code=501,
-        detail="Connect this endpoint to your change-detection task",
+    from app.core.config import settings
+    from app.models.dataset import Dataset
+    from app.workers.change_tasks import process_ndvi_change
+
+    def load_ndvi_dataset(dataset_id: UUID) -> Dataset:
+        record = (
+            db.query(Dataset)
+            .filter(
+                Dataset.id == dataset_id,
+                Dataset.project_id == project_id,
+                Dataset.processing_status == "completed",
+            )
+            .first()
+        )
+
+        if record is None or not record.storage_path:
+            raise HTTPException(
+                status_code=404,
+                detail="NDVI dataset not found or not ready.",
+            )
+
+        metadata = record.dataset_metadata or {}
+        if metadata.get("analysis_type") != "ndvi" and metadata.get("analysis") != "ndvi":
+            raise HTTPException(
+                status_code=422,
+                detail="Dataset is not a completed NDVI raster.",
+            )
+
+        return record
+
+    before = load_ndvi_dataset(payload.before_dataset_id)
+    after = load_ndvi_dataset(payload.after_dataset_id)
+
+    output_dir = Path(settings.DATASET_STORAGE_DIR) / str(project_id) / "change"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / f"ndvi-change-{uuid4()}.tif"
+
+    output_dataset = Dataset(
+        project_id=project_id,
+        capture_id=before.capture_id,
+        name=f"NDVI change ({str(before.id)[:8]} → {str(after.id)[:8]})",
+        dataset_type="geotiff",
+        processing_status="pending",
+        storage_path=str(output_path),
+        dataset_metadata={
+            "analysis": "ndvi_change",
+            "analysis_type": "ndvi_change",
+            "before_dataset_id": str(before.id),
+            "after_dataset_id": str(after.id),
+            "threshold": payload.threshold,
+        },
+    )
+
+    db.add(output_dataset)
+    db.commit()
+    db.refresh(output_dataset)
+
+    try:
+        process_ndvi_change.delay(str(output_dataset.id), payload.threshold)
+    except Exception as exc:
+        output_dataset.processing_status = "failed"
+        output_dataset.dataset_metadata = {
+            **(output_dataset.dataset_metadata or {}),
+            "processing_error": "Unable to enqueue change-detection task.",
+        }
+        db.commit()
+
+        raise HTTPException(
+            status_code=503,
+            detail="Change-detection worker is unavailable.",
+        ) from exc
+
+    return NDVIChangeResponse(
+        dataset_id=output_dataset.id,
+        status=output_dataset.processing_status,
+        message="NDVI change detection has been queued.",
     )

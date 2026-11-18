@@ -6,6 +6,19 @@
 backend/.env
 
 
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+*.pem
+*.key
+
+storage/
+datasets/
+*.tif
+*.tiff
+
 
 # Python
 __pycache__/

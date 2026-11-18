@@ -36,7 +36,9 @@ class Settings(BaseSettings):
     STAC_REQUEST_TIMEOUT: int = 45
     STAC_MAX_ITEMS: int = 20
 
-    DATASET_STORAGE_DIR: str = "/data/aleph/datasets"
+    DATASET_STORAGE_DIR: str = "/data/terra-mind/datasets"
+    S3_BUCKET_NAME: str | None = None
+    AWS_REGION: str = "ap-south-1"
     NDVI_NODATA: float = -9999.0
     NDVI_MIN_VALID_PIXELS: int = 10
 

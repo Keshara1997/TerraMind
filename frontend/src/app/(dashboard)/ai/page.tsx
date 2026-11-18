@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import AppShell from "@/components/layout/app-shell";
 import GeospatialAssistant from "@/components/ai/geospatial-assistant";
+import { AppShell } from "@/components/layout/app-shell";
 
 import { projectService } from "@/services/project.service";
 import { aiService } from "@/services/ai.service";

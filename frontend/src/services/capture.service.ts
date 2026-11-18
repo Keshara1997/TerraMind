@@ -27,6 +27,9 @@ export interface Dataset {
   name: string;
   format: string;
   metadata: Record<string, unknown>;
+  processing_status?: string;
+  storage_path?: string | null;
+  statistics?: Record<string, unknown> | null;
   created_at: string;
 }
 

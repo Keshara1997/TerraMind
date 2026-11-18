@@ -108,14 +108,16 @@ def create_capture(
                 detail="Active data source not found.",
             )
 
-        capture_config = dict(payload.config)
+    capture_config = dict(payload.config)
 
-    if provider_name == "stac":         
-        capture_config.update({
-        "start_date": payload.start_date.isoformat(),
-        "end_date": payload.end_date.isoformat(),
-        "max_cloud_cover": payload.max_cloud_cover,
-    })
+    if provider_name == "stac":
+        capture_config.update(
+            {
+                "start_date": payload.start_date.isoformat(),
+                "end_date": payload.end_date.isoformat(),
+                "max_cloud_cover": payload.max_cloud_cover,
+            }
+        )
 
     capture = Capture(
         project_id=project_id,
@@ -123,7 +125,8 @@ def create_capture(
         data_source_id=payload.data_source_id,
         created_by=current_user.id,
         status="pending",
-        config=payload.config,
+        capture_type=capture_config.get("capture_type", "area_boundary"),
+        configuration=capture_config,
     )
 
     db.add(capture)
@@ -307,10 +310,11 @@ def start_ndvi_processing(
         project_id=project_id,
         capture_id=capture_id,
         name=f"NDVI - {payload.item_id}",
-        format="geotiff",
+        dataset_type="geotiff",
         processing_status="pending",
-        metadata_json={
+        dataset_metadata={
             "analysis": "ndvi",
+            "analysis_type": "ndvi",
             "source_dataset_id": str(source_dataset.id),
             "source_item_id": payload.item_id,
         },

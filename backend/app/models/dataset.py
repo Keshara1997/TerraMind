@@ -2,13 +2,12 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, JSON, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import BigInteger, DateTime, ForeignKey, JSON, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship, synonym
 from sqlalchemy.types import Uuid
 
 from app.database.base import Base
-from sqlalchemy import BigInteger, String, JSON
-from sqlalchemy.orm import Mapped, mapped_column
+
 
 class Dataset(Base):
     __tablename__ = "datasets"
@@ -49,7 +48,6 @@ class Dataset(Base):
     capture: Mapped["Capture | None"] = relationship(back_populates="datasets")
     data_source: Mapped["DataSource | None"] = relationship(back_populates="datasets")
 
-
     processing_status: Mapped[str] = mapped_column(
         String(20),
         default="pending",
@@ -85,3 +83,7 @@ class Dataset(Base):
         JSON,
         nullable=True,
     )
+
+    # Application code uses format/metadata_json; DB columns are dataset_type/dataset_metadata.
+    format = synonym("dataset_type")
+    metadata_json = synonym("dataset_metadata")

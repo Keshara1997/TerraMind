@@ -88,8 +88,8 @@ def process_capture(self, capture_id: str):
                 if is_stac
                 else f"{area.name} capture"
             ),
-            format="stac-json" if is_stac else "geojson",
-            metadata={
+            dataset_type="stac-json" if is_stac else "geojson",
+            dataset_metadata={
                 "provider": provider_name,
                 "feature_count": len(output["features"]),
                 "collection": output.get("collection"),

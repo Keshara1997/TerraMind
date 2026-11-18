@@ -30,7 +30,7 @@ export const aiService = {
     payload: AIQuestionRequest,
   ): Promise<AIQuestionResponse> {
     const response = await api.post(
-      `/ai/projects/${projectId}/ask`,
+      `/api/v1/ai/projects/${projectId}/ask`,
       payload,
     );
 
@@ -44,7 +44,7 @@ export const aiService = {
     areaId?: string,
   ): Promise<EnvironmentalReportResponse> {
     const response = await api.post(
-      `/ai/projects/${projectId}/environmental-report`,
+      `/api/v1/ai/projects/${projectId}/environmental-report`,
       {
         start_date: startDate,
         end_date: endDate,

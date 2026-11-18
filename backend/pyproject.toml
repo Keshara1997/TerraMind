@@ -27,8 +27,11 @@ dependencies = [
     "rasterio>=1.4,<2.0",
     "numpy>=2.0,<3.0",
     "pyproj>=3.7,<4.0",
-    openai = ">=2.0,<3.0",
+    "openai>=2.0,<3.0",
     "mcp[cli]>=2,<3",
+    "openai-agents>=0.1,<1.0",
+    "boto3>=1.35,<2.0",
+    "fastapi-limiter>=0.1.6,<1.0",
 ]
 
 [project.optional-dependencies]

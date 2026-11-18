@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import AppShell from "@/components/layout/app-shell";
 import NDVITimeSeriesChart from "@/components/analysis/ndvi-time-series-chart";
+import { AppShell } from "@/components/layout/app-shell";
 
 import { projectService } from "@/services/project.service";
 import { analysisService } from "@/services/analysis.service";

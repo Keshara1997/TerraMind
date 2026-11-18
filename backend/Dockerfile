@@ -7,6 +7,14 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gdal-bin \
+        libgdal-dev \
+        libexpat1 \
+        g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY pyproject.toml ./
 COPY alembic.ini ./
 COPY alembic/ ./alembic/

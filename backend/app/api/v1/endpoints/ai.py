@@ -2,16 +2,28 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from openai import APIError, APITimeoutError, RateLimitError
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from app.ai.agent_service import run_geospatial_agent
 from app.core.dependencies import get_current_active_user
 from app.database.session import get_db
 from app.models.user import User
 from app.schemas.ai import AIQuestionRequest, AIQuestionResponse
+from app.schemas.report import EnvironmentalReportRequest, EnvironmentalReportResponse
 from app.services.ai_analysis_service import ask_project_question
 from app.services.project_service import ProjectService
+from app.services.report_service import generate_environmental_report
 
 router = APIRouter(prefix="/ai", tags=["AI Analysis"])
+
+
+class AgentQuestionRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=4000)
+
+
+class AgentQuestionResponse(BaseModel):
+    answer: str
 
 
 @router.post(
@@ -32,21 +44,22 @@ async def ask_geospatial_question(
                     detail="Invalid date range",
                 )
 
-        # Enforce project ownership before retrieving any data.
         ProjectService(db).get_project(
             project_id,
             current_user.id,
         )
 
-        # If area_id is supplied, verify that it belongs to this
-        # project and that the current user can access it.
         if payload.area_id:
             from app.models.area import Area
 
-            area = db.query(Area).filter(
-                Area.id == payload.area_id,
-                Area.project_id == project_id,
-            ).first()
+            area = (
+                db.query(Area)
+                .filter(
+                    Area.id == payload.area_id,
+                    Area.project_id == project_id,
+                )
+                .first()
+            )
 
             if not area:
                 raise HTTPException(
@@ -93,16 +106,6 @@ async def ask_geospatial_question(
         )
 
 
-
-        from app.schemas.report import (
-    EnvironmentalReportRequest,
-    EnvironmentalReportResponse,
-)
-from app.services.report_service import (
-    generate_environmental_report,
-)
-
-
 @router.post(
     "/projects/{project_id}/environmental-report",
     response_model=EnvironmentalReportResponse,
@@ -121,10 +124,14 @@ async def create_environmental_report(
     if payload.area_id:
         from app.models.area import Area
 
-        area = db.query(Area).filter(
-            Area.id == payload.area_id,
-            Area.project_id == project_id,
-        ).first()
+        area = (
+            db.query(Area)
+            .filter(
+                Area.id == payload.area_id,
+                Area.project_id == project_id,
+            )
+            .first()
+        )
 
         if not area:
             raise HTTPException(
@@ -144,4 +151,40 @@ async def create_environmental_report(
         raise HTTPException(
             status_code=400,
             detail=str(exc),
+        ) from exc
+
+
+@router.post(
+    "/projects/{project_id}/agent",
+    response_model=AgentQuestionResponse,
+)
+async def ask_geospatial_agent(
+    project_id: UUID,
+    payload: AgentQuestionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    try:
+        ProjectService(db).get_project(project_id, current_user.id)
+
+        answer = await run_geospatial_agent(
+            db=db,
+            user_id=str(current_user.id),
+            project_id=str(project_id),
+            question=payload.question,
+        )
+
+        return AgentQuestionResponse(answer=answer)
+
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="The geospatial agent could not complete the request.",
         ) from exc

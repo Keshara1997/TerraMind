@@ -2,41 +2,39 @@
 "use client";
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { captureService } from "@/services/capture.service";
+import {
+  captureService,
+  type Dataset as CaptureDataset,
+} from "@/services/capture.service";
 
 type Props = {
   projectId: string;
   captureId: string;
 };
 
-type Dataset = {
+type StacFeature = {
   id: string;
-  name: string;
-  format: string;
-  processing_status: string;
-  metadata: {
-    output?: {
-      features?: Array<{
-        id: string;
-        properties?: Record<string, unknown>;
-        assets?: Record<string, { href?: string }>;
-      }>;
-    };
-    statistics?: {
-      min?: number;
-      max?: number;
-      mean?: number;
-      median?: number;
-    };
-    processing_error?: string;
-  };
-  statistics?: {
-    min?: number;
-    max?: number;
-    mean?: number;
-    median?: number;
-  };
+  properties?: Record<string, unknown>;
+  assets?: Record<string, { href?: string }>;
 };
+
+type StacMetadata = {
+  output?: {
+    features?: StacFeature[];
+  };
+  statistics?: Record<string, number>;
+  processing_error?: string;
+};
+
+type Dataset = CaptureDataset & {
+  processing_status: string;
+  metadata: StacMetadata;
+  statistics?: Record<string, number>;
+};
+
+function asStacMetadata(metadata: Record<string, unknown>): StacMetadata {
+  return metadata as StacMetadata;
+}
 
 export default function NDVISceneList({
   projectId,
@@ -108,8 +106,8 @@ export default function NDVISceneList({
         <h3 className="font-semibold">Satellite scenes</h3>
 
         {stacDatasets.map((dataset) => {
-          const features =
-            dataset.metadata?.output?.features ?? [];
+          const metadata = asStacMetadata(dataset.metadata);
+          const features = metadata.output?.features ?? [];
 
           return (
             <div key={dataset.id} className="mt-3 space-y-3">
@@ -119,7 +117,7 @@ export default function NDVISceneList({
                 </p>
               )}
 
-              {features.map((feature) => {
+              {features.map((feature: StacFeature) => {
                 const properties = feature.properties ?? {};
                 const cloudCover = properties["eo:cloud_cover"];
 
@@ -187,9 +185,9 @@ export default function NDVISceneList({
               {dataset.processing_status}
             </p>
 
-            {dataset.metadata?.processing_error && (
+            {asStacMetadata(dataset.metadata).processing_error && (
               <p className="mt-2 text-sm text-red-600">
-                {dataset.metadata.processing_error}
+                {asStacMetadata(dataset.metadata).processing_error}
               </p>
             )}
 
@@ -197,7 +195,9 @@ export default function NDVISceneList({
               <>
                 <p className="mt-2 text-sm">
                   Mean NDVI:{" "}
-                  {dataset.statistics?.mean?.toFixed(4) ?? "N/A"}
+                  {typeof dataset.statistics?.mean === "number"
+                    ? dataset.statistics.mean.toFixed(4)
+                    : "N/A"}
                 </p>
 
                 <button

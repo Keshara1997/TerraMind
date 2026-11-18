@@ -28,7 +28,7 @@ export const analysisService = {
     areaId?: string,
   ): Promise<NDVITimeSeriesResponse> {
     const response = await api.get(
-      `/analysis/projects/${projectId}/ndvi-time-series`,
+      `/api/v1/analysis/projects/${projectId}/ndvi-time-series`,
       {
         params: {
           start_date: startDate || undefined,
@@ -48,7 +48,7 @@ export const analysisService = {
     threshold = 0.1,
   ) {
     const response = await api.post(
-      `/analysis/projects/${projectId}/ndvi-change`,
+      `/api/v1/analysis/projects/${projectId}/ndvi-change`,
       {
         before_dataset_id: beforeDatasetId,
         after_dataset_id: afterDatasetId,
