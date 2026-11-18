@@ -20,8 +20,12 @@ from app.workers.capture_tasks import process_capture
 
 from app.workers.raster_tasks import process_ndvi
 
+import httpx
 
 from app.core.config import settings
+
+from fastapi import Response
+from app.services.raster_tile_service import get_raster_tile
 
 router = APIRouter(
     prefix="/projects/{project_id}/captures",
@@ -400,3 +404,138 @@ def download_dataset(
         media_type=dataset.content_type or "application/octet-stream",
         filename=f"{dataset.id}.tif",
     )
+
+
+
+
+@router.get(
+    "/{capture_id}/datasets/{dataset_id}/tiles/{z}/{x}/{y}.png",
+)
+async def get_dataset_tile(
+    project_id: UUID,
+    capture_id: UUID,
+    dataset_id: UUID,
+    z: int,
+    x: int,
+    y: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    check_project_access(db, project_id, current_user.id)
+
+    dataset = (
+        db.query(Dataset)
+        .filter(
+            Dataset.id == dataset_id,
+            Dataset.capture_id == capture_id,
+            Dataset.project_id == project_id,
+        )
+        .first()
+    )
+
+    if dataset is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Dataset not found.",
+        )
+
+    if dataset.format != "geotiff":
+        raise HTTPException(
+            status_code=422,
+            detail="This dataset is not a raster GeoTIFF.",
+        )
+
+    if dataset.processing_status != "completed":
+        raise HTTPException(
+            status_code=409,
+            detail="Raster processing is not completed.",
+        )
+
+    if not dataset.storage_path:
+        raise HTTPException(
+            status_code=404,
+            detail="Raster file is unavailable.",
+        )
+
+    try:
+        tile, content_type = await get_raster_tile(
+            storage_path=dataset.storage_path,
+            z=z,
+            x=x,
+            y=y,
+        )
+
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail=str(exc),
+        ) from exc
+
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Raster tile service failed.",
+        ) from exc
+
+    return Response(
+        content=tile,
+        media_type=content_type,
+        headers={
+            "Cache-Control": "private, max-age=300",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+@router.get(
+    "/{capture_id}/datasets/{dataset_id}/raster-info",
+)
+def get_raster_info(
+    project_id: UUID,
+    capture_id: UUID,
+    dataset_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    check_project_access(db, project_id, current_user.id)
+
+    dataset = (
+        db.query(Dataset)
+        .filter(
+            Dataset.id == dataset_id,
+            Dataset.capture_id == capture_id,
+            Dataset.project_id == project_id,
+        )
+        .first()
+    )
+
+    if dataset is None:
+        raise HTTPException(status_code=404, detail="Dataset not found.")
+
+    if dataset.format != "geotiff":
+        raise HTTPException(
+            status_code=422,
+            detail="Dataset is not a GeoTIFF.",
+        )
+
+    if dataset.processing_status != "completed":
+        raise HTTPException(
+            status_code=409,
+            detail="Raster processing is not completed.",
+        )
+
+    return {
+        "id": str(dataset.id),
+        "name": dataset.name,
+        "format": dataset.format,
+        "crs": dataset.crs,
+        "bounds": dataset.bounds,
+        "statistics": dataset.statistics,
+        "file_size_bytes": dataset.file_size_bytes,
+        "content_type": dataset.content_type,
+    }

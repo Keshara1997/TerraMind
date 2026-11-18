@@ -155,6 +155,32 @@ services:
     networks:
       - TerraMind-network
 
+
+
+  # ==========================================
+  # TiTiler - Geospatial Raster Tile Server
+  # ==========================================
+  titiler:
+    build:
+      context: ./titiler
+      dockerfile: Dockerfile
+
+    container_name: TerraMind-titiler
+    restart: unless-stopped
+
+    environment:
+      GDAL_DISABLE_READDIR_ON_OPEN: EMPTY_DIR
+      GDAL_HTTP_MERGE_CONSECUTIVE_RANGES: "YES"
+      GDAL_HTTP_MULTIPLEX: "YES"
+      VSI_CACHE: "TRUE"
+      VSI_CACHE_SIZE: "536870912"
+
+    volumes:
+      - terramind-datasets:/data/terra-mind/datasets:ro
+
+    networks:
+      - TerraMind-network
+
 # ==========================================
 # Persistent Volumes
 # ==========================================
@@ -171,6 +197,9 @@ volumes:
 
   frontend_next:
     name: TerraMind-frontend-next
+
+  terramind-datasets:
+    name: TerraMind-datasets
 
 # ==========================================
 # Internal Docker Network

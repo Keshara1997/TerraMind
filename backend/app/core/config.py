@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     NDVI_NODATA: float = -9999.0
     NDVI_MIN_VALID_PIXELS: int = 10
 
+    TITILER_INTERNAL_URL: str = "http://titiler:8000"
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
