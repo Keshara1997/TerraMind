@@ -8,6 +8,7 @@ import {
   Bot,
   Database,
   FolderKanban,
+  Layers,
   Layers3,
   Map,
   Settings,
@@ -39,6 +40,11 @@ const navigation = [
     label: "AI Assistant",
     href: "/ai",
     icon: Bot,
+  },
+  {
+    label: "Analysis",
+    href: "/analysis",
+    icon: Layers,
   },
 ];
 

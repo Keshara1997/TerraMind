@@ -1,3 +1,4 @@
+export const instant = false;
 
 import { AppShell } from "@/components/layout/app-shell";
 import AreaEditor from "@/components/maps/area-editor";

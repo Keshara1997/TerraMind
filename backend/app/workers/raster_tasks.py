@@ -2,6 +2,8 @@
 from pathlib import Path
 from uuid import UUID
 
+from geoalchemy2.shape import to_shape
+
 from app.core.config import settings
 from app.database.session import SessionLocal
 from app.geospatial.raster_processor import calculate_ndvi
@@ -9,8 +11,6 @@ from app.models.area import Area
 from app.models.capture import Capture
 from app.models.dataset import Dataset
 from app.workers.celery_app import celery_app
-
-from geoalchemy2.shape import to_shape
 
 
 @celery_app.task(
@@ -85,7 +85,8 @@ def process_ndvi(self, dataset_id: str):
         if area is None:
             raise ValueError("Capture area not found.")
 
-        # Read the STAC FeatureCollection.
+        # Read the stored STAC FeatureCollection.
+        # No additional satellite API request is required.
         stac_output = source_dataset.metadata_json["output"]
 
         item = next(
@@ -100,6 +101,18 @@ def process_ndvi(self, dataset_id: str):
         if item is None:
             raise ValueError("Selected STAC item was not found.")
 
+        # Retrieve the original satellite acquisition date.
+        item_properties = item.get("properties", {}) or {}
+
+        acquisition_datetime = item_properties.get("datetime")
+
+        if not acquisition_datetime:
+            raise ValueError(
+                "Satellite acquisition datetime is missing "
+                "from the stored STAC item."
+            )
+
+        # Read satellite assets.
         assets = item.get("assets", {})
 
         red_asset = assets.get("red")
@@ -117,6 +130,7 @@ def process_ndvi(self, dataset_id: str):
         if not red_url or not nir_url:
             raise ValueError("Satellite raster asset URL is missing.")
 
+        # Calculate NDVI.
         result = calculate_ndvi(
             red_url=red_url,
             nir_url=nir_url,
@@ -125,6 +139,7 @@ def process_ndvi(self, dataset_id: str):
 
         output_path = Path(result["path"])
 
+        # Update processed dataset information.
         dataset.storage_path = result["path"]
         dataset.content_type = "image/tiff"
         dataset.file_size_bytes = result["file_size_bytes"]
@@ -133,11 +148,15 @@ def process_ndvi(self, dataset_id: str):
         dataset.statistics = result["statistics"]
         dataset.processing_status = "completed"
 
+        # Preserve existing metadata and add NDVI information.
         dataset.metadata_json = {
             **(dataset.metadata_json or {}),
             "analysis": "ndvi",
+            "analysis_type": "ndvi",
+            "index": "NDVI",
             "formula": "(NIR - RED) / (NIR + RED)",
             "source_item_id": item_id,
+            "acquisition_datetime": acquisition_datetime,
             "red_asset": "red",
             "nir_asset": "nir",
             "statistics": result["statistics"],
@@ -148,6 +167,7 @@ def process_ndvi(self, dataset_id: str):
         return {
             "status": "completed",
             "dataset_id": dataset_id,
+            "acquisition_datetime": acquisition_datetime,
             "file_size_bytes": result["file_size_bytes"],
         }
 
@@ -162,10 +182,12 @@ def process_ndvi(self, dataset_id: str):
 
         if dataset is not None:
             dataset.processing_status = "failed"
+
             dataset.metadata_json = {
                 **(dataset.metadata_json or {}),
                 "processing_error": str(exc)[:2000],
             }
+
             db.commit()
 
         if output_path and output_path.exists():
