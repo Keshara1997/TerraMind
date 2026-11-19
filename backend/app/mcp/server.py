@@ -11,7 +11,7 @@ from app.mcp.prompts import (
 )
 
 mcp = MCPServer(
-    "Aleph Next Geospatial MCP",
+    "TERRAMIND Geospatial MCP",
     log_level="INFO",
 )
 
@@ -36,7 +36,7 @@ async def execute_api_request(method, path, params=None, payload=None):
 
     except httpx.RequestError as exc:
         raise RuntimeError(
-            "Unable to connect to the Aleph Next API"
+            "Unable to connect to the TERRAMIND API"
         ) from exc
 
     finally:
@@ -51,7 +51,7 @@ async def get_ndvi_time_series(
     area_id: str = "",
 ) -> str:
     """
-    Retrieve verified NDVI observations for an Aleph Next project.
+    Retrieve verified NDVI observations for an TERRAMIND project.
 
     Use this tool when the user asks about vegetation trends,
     NDVI statistics or historical satellite observations.
@@ -87,7 +87,7 @@ async def ask_geospatial_question(
     area_id: str = "",
 ) -> str:
     """
-    Ask Aleph Next AI to analyse a project's verified geospatial data.
+    Ask TERRAMIND AI to analyse a project's verified geospatial data.
 
     Use this tool for natural-language questions about vegetation,
     NDVI trends and satellite analysis.
@@ -162,16 +162,16 @@ async def generate_environmental_report(
 
 @mcp.resource("aleph://capabilities")
 def aleph_capabilities() -> str:
-    """Describe the available Aleph Next geospatial capabilities."""
+    """Describe the available TERRAMIND geospatial capabilities."""
 
     return json.dumps({
-        "application": "Aleph Next",
+        "application": "TERRAMIND",
         "capabilities": [
             "NDVI time-series retrieval",
             "Geospatial question answering",
             "Environmental report generation",
         ],
-        "data_source": "Authenticated Aleph Next API",
+        "data_source": "Authenticated TERRAMIND API",
         "authorization": "Existing user JWT",
     }, indent=2)
 

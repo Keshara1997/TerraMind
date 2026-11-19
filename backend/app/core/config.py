@@ -1,18 +1,25 @@
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+_BACKEND_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = _BACKEND_ROOT.parent
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(
+            _BACKEND_ROOT / ".env",
+            _REPO_ROOT / ".env",
+        ),
         case_sensitive=False,
         extra="ignore",
     )
 
-    APP_NAME: str = "Aleph Next"
+    APP_NAME: str = "TERRAMIND"
     APP_ENV: str = "development"
     APP_DEBUG: bool = True
 

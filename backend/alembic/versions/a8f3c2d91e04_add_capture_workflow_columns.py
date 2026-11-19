@@ -17,35 +17,53 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+def _capture_columns(bind) -> set[str]:
+    inspector = sa.inspect(bind)
+    return {column["name"] for column in inspector.get_columns("captures")}
+
+
 def upgrade() -> None:
-    op.add_column(
-        "captures",
-        sa.Column("data_source_id", sa.Uuid(), nullable=True),
-    )
-    op.add_column(
-        "captures",
-        sa.Column("created_by", sa.Uuid(), nullable=True),
-    )
-    op.add_column(
-        "captures",
-        sa.Column("error_message", sa.Text(), nullable=True),
-    )
-    op.create_foreign_key(
-        op.f("fk_captures_data_source_id_data_sources"),
-        "captures",
-        "data_sources",
-        ["data_source_id"],
-        ["id"],
-        ondelete="SET NULL",
-    )
-    op.create_foreign_key(
-        op.f("fk_captures_created_by_users"),
-        "captures",
-        "users",
-        ["created_by"],
-        ["id"],
-        ondelete="SET NULL",
-    )
+    bind = op.get_bind()
+    existing = _capture_columns(bind)
+
+    if "data_source_id" not in existing:
+        op.add_column(
+            "captures",
+            sa.Column("data_source_id", sa.Uuid(), nullable=True),
+        )
+    if "created_by" not in existing:
+        op.add_column(
+            "captures",
+            sa.Column("created_by", sa.Uuid(), nullable=True),
+        )
+    if "error_message" not in existing:
+        op.add_column(
+            "captures",
+            sa.Column("error_message", sa.Text(), nullable=True),
+        )
+
+    inspector = sa.inspect(bind)
+    fk_names = {fk["name"] for fk in inspector.get_foreign_keys("captures")}
+
+    if op.f("fk_captures_data_source_id_data_sources") not in fk_names:
+        op.create_foreign_key(
+            op.f("fk_captures_data_source_id_data_sources"),
+            "captures",
+            "data_sources",
+            ["data_source_id"],
+            ["id"],
+            ondelete="SET NULL",
+        )
+
+    if op.f("fk_captures_created_by_users") not in fk_names:
+        op.create_foreign_key(
+            op.f("fk_captures_created_by_users"),
+            "captures",
+            "users",
+            ["created_by"],
+            ["id"],
+            ondelete="SET NULL",
+        )
 
 
 def downgrade() -> None:

@@ -4,7 +4,7 @@ def vegetation_analysis_prompt(
     end_date: str,
 ) -> str:
     return f"""
-Analyse vegetation conditions for Aleph Next project {project_id}.
+Analyse vegetation conditions for TERRAMIND project {project_id}.
 
 Analysis period:
 Start: {start_date}

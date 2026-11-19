@@ -42,7 +42,7 @@ export function RegisterPageClient() {
       >
         <div>
           <p className="text-sm font-semibold tracking-widest text-cyan-400">
-            ALEPH NEXT
+            TERRAMIND
           </p>
           <h1 className="mt-4 text-3xl font-bold">Create your account</h1>
           <p className="mt-2 text-sm text-slate-400">

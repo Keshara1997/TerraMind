@@ -21,8 +21,19 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    pass
+    op.create_index(
+        "ix_areas_geometry_gist",
+        "areas",
+        ["geometry"],
+        unique=False,
+        postgresql_using="gist",
+        if_not_exists=True,
+    )
 
 
 def downgrade() -> None:
-    pass
+    op.drop_index(
+        "ix_areas_geometry_gist",
+        table_name="areas",
+        if_exists=True,
+    )

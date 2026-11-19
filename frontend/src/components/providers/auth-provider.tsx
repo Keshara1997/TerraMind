@@ -36,7 +36,7 @@ export function AuthProvider({
   if (!initialized) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0b1017] text-slate-400">
-        Loading Aleph Next...
+        Loading TERRAMIND...
       </div>
     );
   }

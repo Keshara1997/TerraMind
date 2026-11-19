@@ -8,9 +8,8 @@ Create Date: 2026-11-05 14:52:29.562506
 
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 revision: str = "853d7bc7a0f6"
 down_revision: Union[str, None] = "115e13c0229e"
@@ -61,23 +60,3 @@ def downgrade() -> None:
         table_name="auth_sessions",
     )
     op.drop_table("auth_sessions")
-
-
-
-
-def upgrade() -> None:
-    op.create_index(
-        "ix_areas_geometry_gist",
-        "areas",
-        ["geometry"],
-        unique=False,
-        postgresql_using="gist",
-        if_not_exists=True,
-    )
-
-
-def downgrade() -> None:
-    op.drop_index(
-        "ix_areas_geometry_gist",
-        table_name="areas",
-    )
