@@ -85,26 +85,26 @@ This directory contains the technical documentation for TERRAMIND.
 
 | Document | Description |
 |---|---|
-| [Architecture](architecture.md) | System architecture and component relationships |
-| [Repository Structure](repository-structure.md) | Project directories and file organization |
-| [Development Setup](development-setup.md) | Local development environment setup |
-| [Environment Variables](environment-variables.md) | Application configuration and environment settings |
-| [Docker Setup](docker-setup.md) | Docker services and container configuration |
-| [Database Schema](database-schema.md) | Database entities, relationships and migrations |
-| [API Documentation](api-documentation.md) | Backend REST API endpoints |
-| [Authentication](authentication.md) | Authentication and session management |
-| [Geospatial Processing](geospatial-processing.md) | Geometry validation and spatial operations |
-| [Satellite Data Sources](satellite-data-sources.md) | Satellite imagery providers and STAC integration |
-| [Raster Processing](raster-processing.md) | Raster processing and storage workflows |
-| [NDVI Analysis](ndvi-analysis.md) | Vegetation index calculations and analysis |
-| [AI Integration](ai-integration.md) | AI-powered analysis and environmental insights |
-| [MCP Integration](mcp-integration.md) | MCP server and geospatial tools |
-| [Monitoring](monitoring.md) | Environmental monitoring and alert workflows |
-| [Security](security.md) | Application security and protection |
-| [Multi-Tenancy](multi-tenancy.md) | Organization management and tenant isolation |
-| [AWS Deployment](aws-deployment.md) | Cloud infrastructure and deployment |
-| [Backup and Recovery](backup-and-recovery.md) | Database and dataset backup procedures |
-| [Troubleshooting](troubleshooting.md) | Common development and deployment issues |
+| [Architecture](docs/architecture.md) | System architecture and component relationships |
+| [Repository Structure](docs/repository-structure.md) | Project directories and file organization |
+| [Development Setup](docs/development-setup.md) | Local development environment setup |
+| [Environment Variables](docs/environment-variables.md) | Application configuration and environment settings |
+| [Docker Setup](docs/docker-setup.md) | Docker services and container configuration |
+| [Database Schema](docs/database-schema.md) | Database entities, relationships and migrations |
+| [API Documentation](docs/api-documentation.md) | Backend REST API endpoints |
+| [Authentication](docs/authentication.md) | Authentication and session management |
+| [Geospatial Processing](docs/geospatial-processing.md) | Geometry validation and spatial operations |
+| [Satellite Data Sources](docs/satellite-data-sources.md) | Satellite imagery providers and STAC integration |
+| [Raster Processing](docs/raster-processing.md) | Raster processing and storage workflows |
+| [NDVI Analysis](docs/ndvi-analysis.md) | Vegetation index calculations and analysis |
+| [AI Integration](docs/ai-integration.md) | AI-powered analysis and environmental insights |
+| [MCP Integration](docs/mcp-integration.md) | MCP server and geospatial tools |
+| [Monitoring](docs/monitoring.md) | Environmental monitoring and alert workflows |
+| [Security](docs/security.md) | Application security and protection |
+| [Multi-Tenancy](docs/multi-tenancy.md) | Organization management and tenant isolation |
+| [AWS Deployment](docs/aws-deployment.md) | Cloud infrastructure and deployment |
+| [Backup and Recovery](docs/backup-and-recovery.md) | Database and dataset backup procedures |
+| [Troubleshooting](docs/troubleshooting.md) | Common development and deployment issues |
 
 ## 4. Main Application Components
 
